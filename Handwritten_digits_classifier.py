@@ -1,10 +1,21 @@
-#import main libraries
+#main libraries
 import tensorflow as tf
 from tensorflow import keras
 #helper libraries
 import matplotlib.pyplot as plt
 import numpy as np
 
+plt.figure()
+
+#function to help visualise results
+def show_image():
+  pre_result = np.argmax(predictions[0])
+  ac_result = test_labels[0]
+  results = "Predicted result: "+ str(pre_result) + "   Actual result: "+ str(ac_result)
+  plt.imshow(test_images[0])
+  plt.xlabel(results)
+  plt.show()
+  
 #labels
 categories = ["0","1","2","3","4","5","6","7","8","9"]
 
@@ -46,6 +57,4 @@ print('Test accuracy:', test_acc)
 #make predicitions for test images
 predictions = model.predict(test_images)
 
-print(predictions[0])
-print(np.argmax(predictions[0]))
-print(test_labels[0])
+show_image()
