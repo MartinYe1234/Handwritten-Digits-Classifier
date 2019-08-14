@@ -4,17 +4,36 @@ from tensorflow import keras
 #helper libraries
 import matplotlib.pyplot as plt
 import numpy as np
+from random import randint
 
 plt.figure()
+plt.rcParams["figure.figsize"] = (15,15)
 
 #function to help visualise results
 def show_image():
-  pre_result = np.argmax(predictions[0])
-  ac_result = test_labels[0]
-  results = "Predicted result: "+ str(pre_result) + "   Actual result: "+ str(ac_result)
-  plt.imshow(test_images[0])
-  plt.xlabel(results)
+  #generate a random batch of 6 consecutive cases to show to the user
+  index = randint(0,9969)
+  for i in range(6):
+    cur_sample_index = index + i 
+    
+    #show the actual written number being classified
+    plt.subplot(3, 4, 2*i+1)
+    plt.yticks([])
+    plt.xticks([])
+    plt.imshow(test_images[cur_sample_index])
+ 
+    #print the results at the bottom of the graph
+    pre_result = np.argmax(predictions[cur_sample_index])
+    ac_result = test_labels[cur_sample_index]
+    results = "Predicted result: "+ str(pre_result) + "   Actual result: "+ str(ac_result)
+    plt.xlabel(results)
+    
+    #show the certainty of the prediction next to the number
+    plt.subplot(3, 4, 2*i+2)
+    certainty_plot = plt.bar(range(10), predictions[cur_sample_index], color="red")
+    plt.ylim([0, 1])
   plt.show()
+  
   
 #labels
 categories = ["0","1","2","3","4","5","6","7","8","9"]
