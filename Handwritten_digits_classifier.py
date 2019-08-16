@@ -11,10 +11,13 @@ plt.rcParams["figure.figsize"] = (15,15)
 
 #function to help visualise results
 def show_image():
+  
   #generate a random batch of 6 consecutive cases to show to the user
-  index = randint(0,9969)
+  index = randint(0,9994)
   for i in range(6):
     cur_sample_index = index + i 
+    #reformat data so that it can be graphed
+    test_image = np.squeeze(test_images[cur_sample_index])
     #find most certain prediction
     most_certain = np.argmax(predictions[cur_sample_index])
     
@@ -23,7 +26,7 @@ def show_image():
     #remove ticks from x and y axes
     plt.yticks([])
     plt.xticks([])
-    plt.imshow(test_images[cur_sample_index])
+    plt.imshow(test_image)
  
     #print the results at the bottom of the graph
     pre_result = str(np.argmax(predictions[cur_sample_index]))
@@ -42,7 +45,7 @@ def show_image():
       certainty_plot[most_certain].set_color("green")
     else:
       certainty_plot[most_certain].set_color("red")
-    
+      
     plt.ylim([0, 1])
     plt.xticks([i for i in range(11)])
   plt.show()
@@ -53,18 +56,26 @@ number_mnist = tf.keras.datasets.mnist
 #split into train and test
 (train_images, train_labels), (test_images, test_labels) = number_mnist.load_data()
 
+#reshape data so that it can be used
+train_images = train_images.reshape(train_images.shape[0], 28, 28, 1)
+test_images = test_images.reshape(test_images.shape[0], 28, 28, 1)
+
 #normalise data - all values are between 0 and 1
 train_images = train_images / 255.0
 test_images = test_images / 255.0
 
 #setup the layers of the model
 model = keras.Sequential([
+    #convolutional layer to extract data form the image
+    keras.layers.Conv2D(28, kernel_size=(5,5), input_shape=(28,28,1)),
+    #reduces complexity and helps with overfitting
+    keras.layers.MaxPooling2D(pool_size=(2, 2)),
     #turns a 28x28 array into a 784x1 array
-    keras.layers.Flatten(input_shape=(28, 28)),
-    #helps reduce overfitting of data
-    keras.layers.Dropout(0.2, noise_shape=None, seed=None),
+    keras.layers.Flatten(),
     #add a layer to the neural net - outputs an array of length 128
     keras.layers.Dense(128, activation=tf.nn.relu),
+    #helps reduce overfitting of data
+    keras.layers.Dropout(0.2, noise_shape=None, seed=None),
     #final output layer returning an array of length 10 - maps all values to either a 0 or 1
     keras.layers.Dense(10, activation=tf.nn.softmax)
 ])
@@ -75,7 +86,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 #training the model using train_images
-model.fit(train_images, train_labels, epochs=15)
+model.fit(train_images, train_labels, epochs=10)
 
 #run the model on the test data
 test_loss, test_acc = model.evaluate(test_images, test_labels)
