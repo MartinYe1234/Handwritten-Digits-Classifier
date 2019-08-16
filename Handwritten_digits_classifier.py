@@ -15,28 +15,37 @@ def show_image():
   index = randint(0,9969)
   for i in range(6):
     cur_sample_index = index + i 
+    #find most certain prediction
+    most_certain = np.argmax(predictions[cur_sample_index])
     
     #show the actual written number being classified
     plt.subplot(3, 4, 2*i+1)
+    #remove ticks from x and y axes
     plt.yticks([])
     plt.xticks([])
     plt.imshow(test_images[cur_sample_index])
  
     #print the results at the bottom of the graph
-    pre_result = np.argmax(predictions[cur_sample_index])
-    ac_result = test_labels[cur_sample_index]
-    results = "Predicted result: "+ str(pre_result) + "   Actual result: "+ str(ac_result)
+    pre_result = str(np.argmax(predictions[cur_sample_index]))
+    ac_result = str(test_labels[cur_sample_index])
+    #the certainty of the prediction
+    certainty = str(round(100*np.max(predictions[cur_sample_index]),2))
+    results = "Predicted: "+ pre_result + " (" + certainty  + "%)   Actual: "+ ac_result
     plt.xlabel(results)
     
     #show the certainty of the prediction next to the number
     plt.subplot(3, 4, 2*i+2)
-    certainty_plot = plt.bar(range(10), predictions[cur_sample_index], color="red")
+    certainty_plot = plt.bar(range(10), predictions[cur_sample_index], color="grey")
+    
+    #set the line color depending on whether or not the prediction was correct
+    if pre_result == ac_result:
+      certainty_plot[most_certain].set_color("green")
+    else:
+      certainty_plot[most_certain].set_color("red")
+    
     plt.ylim([0, 1])
+    plt.xticks([i for i in range(11)])
   plt.show()
-  
-  
-#labels
-categories = ["0","1","2","3","4","5","6","7","8","9"]
 
 #load data set from mnist
 number_mnist = tf.keras.datasets.mnist
@@ -66,7 +75,7 @@ model.compile(optimizer='adam',
               metrics=['accuracy'])
 
 #training the model using train_images
-model.fit(train_images, train_labels, epochs=5)
+model.fit(train_images, train_labels, epochs=15)
 
 #run the model on the test data
 test_loss, test_acc = model.evaluate(test_images, test_labels)
